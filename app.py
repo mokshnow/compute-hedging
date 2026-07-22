@@ -685,15 +685,18 @@ if page == NAV_SIMULATOR:
 
     ex = result.execution
     trade_rows = []
-    position = 0
+    position = 0  # signed: negative = short exposure
+
+    def _signed(n: int) -> str:
+        return f"{n:+,}"
 
     def _row(month: str, action_html: str, trade_size: int, pos: int, reason: str) -> str:
         return (
             f"<tr>"
             f"<td>{month}</td>"
             f"<td>{action_html}</td>"
-            f"<td>{trade_size:,}</td>"
-            f"<td>{pos:,}</td>"
+            f"<td>{_signed(trade_size)}</td>"
+            f"<td>{_signed(pos)}</td>"
             f"<td>{reason}</td>"
             f"</tr>"
         )
@@ -702,16 +705,18 @@ if page == NAV_SIMULATOR:
         if "BLOCKED" in a.reason.upper():
             continue
         if a.action == "open_short":
-            position += a.contracts
+            trade = -a.contracts
+            position += trade
             label, cls = "OPEN SHORT", "tag"
         elif a.action == "unwind":
-            position = max(0, position - a.contracts)
+            trade = a.contracts
+            position = min(0, position + trade)
             label, cls = "COVER SHORT", "WARN"
         else:
-            # roll: standing short unchanged
+            trade = 0
             label, cls = a.action.replace("_", " ").upper(), ""
         action_html = f"<span class='{cls}'>{label}</span>" if cls else label
-        trade_rows.append(_row("—", action_html, a.contracts, position, a.reason))
+        trade_rows.append(_row("—", action_html, trade, position, a.reason))
 
     for _, row in ex.signals.iterrows():
         sig = str(row["signal"])
@@ -719,12 +724,18 @@ if page == NAV_SIMULATOR:
             continue
         size = int(row["contracts"])
         if sig == "SELL":
-            position = size
-            action_html = "<span class='tag'>SELL</span>"
+            target = -abs(size)
+            trade = target - position
+            # Only true increases (more short); always show negative exposure
+            if trade >= 0:
+                continue
+            position = target
+            action_html = "<span class='tag'>INCREASE SHORT</span>"
         else:
-            position = max(0, position - size)
+            trade = abs(size)
+            position = min(0, position + trade)
             action_html = "<span class='WARN'>COVER SHORT</span>"
-        trade_rows.append(_row(str(int(row["month"])), action_html, size, position, str(row["reason"])))
+        trade_rows.append(_row(str(int(row["month"])), action_html, trade, position, str(row["reason"])))
 
     if not trade_rows:
         trade_rows.append("<tr><td colspan='5'>No trades this cycle</td></tr>")

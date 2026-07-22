@@ -82,7 +82,7 @@ def generate_signals(
                         Signal.SELL,
                         month,
                         contracts,
-                        f"margin CI lower={lo:.3f} < floor={cfg.min_margin:.3f}",
+                        f"margin drop: {lo * 100:.1f}% < {cfg.min_margin * 100:.0f}%",
                         cushion,
                         maf,
                     )
