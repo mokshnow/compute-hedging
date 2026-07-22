@@ -38,25 +38,17 @@ python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 python -m hedging.pipeline          # CLI summary
-streamlit run app.py                # interactive pitch dashboard
-pytest -q                           # unit checks
-```
-
-Optional live Kalshi credentials (falls back to a simulated forward curve):
-
-```bash
-cp .env.example .env
-# set KALSHI_API_KEY_ID + KALSHI_PRIVATE_KEY_PATH
+streamlit run computehedging.py     # interactive pitch dashboard
 ```
 
 ## Architecture
 
 ```
-Phase 1  models/          hardware depreciation + power matrices + unhedged revenue
-         kalshi/          API client + forward-curve store (parquet, reconstructible as-of)
-Phase 2  risk/            margin mapping, optimal hedge ratio
-Phase 3  execution/       threshold triggers, dynamic rebalance/roll, liquidity alerts
-Phase 4  app.py           Streamlit hedged vs unhedged PnL + financing narrative
+Phase 1  models/              hardware depreciation + power matrices + unhedged revenue
+         kalshi/forward_curve synthetic GPU forward curve + snapshot store
+Phase 2  risk/                margin mapping, optimal hedge ratio
+Phase 3  execution/           threshold triggers, dynamic rebalance/roll, liquidity alerts
+Phase 4  computehedging.py    Streamlit hedged vs unhedged PnL + financing narrative
 ```
 
 ### Phase 1 — State modeling
@@ -64,8 +56,7 @@ Phase 4  app.py           Streamlit hedged vs unhedged PnL + financing narrative
 - `hedging/models/hardware.py` — vectorized H100 / H200 / A100 book-value curves (NumPy)
 - `hedging/models/power.py` — regional $/kWh capacity matrices with escalation & take-or-pay
 - `hedging/models/datacenter.py` — unhedged baseline: GPU-hours × spot ($/GPU-hr)
-- `hedging/kalshi/client.py` — Kalshi Trade API v2 connector (RSA-PSS auth)
-- `hedging/kalshi/forward_curve.py` — snapshot store; `curve_at(timestamp)` reconstruction
+- `hedging/kalshi/forward_curve.py` — simulated curve + snapshot store; `curve_at(timestamp)` reconstruction
 
 ### Phase 2 — Risk engine
 
@@ -90,7 +81,7 @@ Phase 4  app.py           Streamlit hedged vs unhedged PnL + financing narrative
 
 ### Phase 4 — Pitch layer
 
-`streamlit run app.py` graphs unhedged (high variance) vs hedged (floored) income and margins,
+`streamlit run computehedging.py` graphs unhedged (high variance) vs hedged (floored) income and margins,
 surfaces the forward curve, signals, and alerts, and closes on the financing DSCR argument.
 
 ## Disclaimer
