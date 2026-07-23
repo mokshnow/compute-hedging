@@ -14,7 +14,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 # Bump when SimulationResult / module APIs change so Streamlit drops stale imports.
-_CACHE_VERSION = 15
+_CACHE_VERSION = 16
 if st.session_state.get("_cache_ver") != _CACHE_VERSION:
     for name in list(sys.modules):
         if name == "hedging" or name.startswith("hedging."):
@@ -175,14 +175,18 @@ header[data-testid="stHeader"],
 .strip {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  border: 1px solid var(--line);
-  background: rgba(18, 26, 33, 0.65);
+  border: 1px solid rgba(230, 238, 244, 0.14);
+  border-radius: 12px;
+  background: rgba(18, 26, 33, 0.72);
   backdrop-filter: blur(8px);
-  overflow: visible;
+  box-shadow:
+    0 0 0 1px rgba(0, 221, 148, 0.04),
+    0 12px 40px rgba(0, 0, 0, 0.28);
+  overflow: hidden;
 }
 .strip > div {
-  padding: 1.1rem 1rem;
-  border-right: 1px solid var(--line);
+  padding: 1.15rem 1.1rem;
+  border-right: 1px solid rgba(230, 238, 244, 0.1);
   overflow: visible;
 }
 .strip > div:last-child { border-right: none; }
@@ -243,8 +247,20 @@ header[data-testid="stHeader"],
 
 .compare {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   font-size: 0.92rem;
+}
+.table-wrap {
+  border: 1px solid rgba(230, 238, 244, 0.14);
+  border-radius: 12px;
+  background: rgba(18, 26, 33, 0.72);
+  backdrop-filter: blur(8px);
+  box-shadow:
+    0 0 0 1px rgba(0, 221, 148, 0.04),
+    0 12px 40px rgba(0, 0, 0, 0.28);
+  overflow: hidden;
+  margin-top: 0.15rem;
 }
 .compare.compact {
   width: 100%;
@@ -252,14 +268,10 @@ header[data-testid="stHeader"],
 }
 .compare.compact th {
   font-size: 0.58rem;
-  padding: 0.28rem 0.65rem 0.28rem 0;
-}
-.compare.compact th:last-child,
-.compare.compact td:last-child {
-  padding-right: 0;
+  padding: 0.7rem 1rem;
 }
 .compare.compact td {
-  padding: 0.38rem 0.65rem 0.38rem 0;
+  padding: 0.62rem 1rem;
   font-variant-numeric: tabular-nums;
 }
 .compare th {
@@ -269,16 +281,24 @@ header[data-testid="stHeader"],
   text-transform: uppercase;
   color: var(--muted);
   text-align: right;
-  padding: 0.5rem 0;
-  border-bottom: 1px solid var(--line);
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(230, 238, 244, 0.12);
+  background: rgba(0, 221, 148, 0.06);
   font-weight: 500;
 }
 .compare th:first-child { text-align: left; }
 .compare td {
-  padding: 0.65rem 0;
-  border-bottom: 1px solid var(--line);
+  padding: 0.7rem 1rem;
+  border-bottom: 1px solid rgba(230, 238, 244, 0.07);
   text-align: right;
   color: var(--ink);
+  transition: background 0.12s ease;
+}
+.compare tbody tr:last-child td {
+  border-bottom: none;
+}
+.compare tbody tr:hover td {
+  background: rgba(230, 238, 244, 0.035);
 }
 .compare td:first-child { text-align: left; color: var(--muted); }
 .compare td.hi {
@@ -473,9 +493,17 @@ div[data-baseweb="slider"] div[role="slider"] {
 }
 .guide table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   margin: 0.75rem 0 1.1rem;
   font-size: 0.9rem;
+  border: 1px solid rgba(230, 238, 244, 0.14);
+  border-radius: 12px;
+  background: rgba(18, 26, 33, 0.72);
+  box-shadow:
+    0 0 0 1px rgba(0, 221, 148, 0.04),
+    0 12px 40px rgba(0, 0, 0, 0.28);
+  overflow: hidden;
 }
 .guide th {
   font-family: 'IBM Plex Mono', monospace;
@@ -484,15 +512,17 @@ div[data-baseweb="slider"] div[role="slider"] {
   text-transform: uppercase;
   color: var(--muted);
   text-align: left;
-  padding: 0.5rem 0.6rem 0.5rem 0;
-  border-bottom: 1px solid var(--line);
+  padding: 0.7rem 1rem;
+  border-bottom: 1px solid rgba(230, 238, 244, 0.12);
+  background: rgba(0, 221, 148, 0.06);
 }
 .guide td {
-  padding: 0.55rem 0.6rem 0.55rem 0;
-  border-bottom: 1px solid var(--line);
+  padding: 0.62rem 1rem;
+  border-bottom: 1px solid rgba(230, 238, 244, 0.07);
   color: var(--muted);
   vertical-align: top;
 }
+.guide tr:last-child td { border-bottom: none; }
 .guide td:first-child { color: var(--ink); }
 .guide ul { padding-left: 1.15rem; margin: 0.4rem 0 0.9rem; }
 .guide li { margin-bottom: 0.35rem; }
@@ -749,6 +779,7 @@ if page == NAV_SIMULATOR:
           <div class="row-line" style="margin:0.25rem 0 0.65rem">
             Shorting <strong style="color:#e6eef4">{gpu} 10,000 GPU-hour Synthetic Forwards</strong>
           </div>
+          <div class="table-wrap">
           <table class="compare compact">
             <thead>
               <tr>
@@ -763,6 +794,7 @@ if page == NAV_SIMULATOR:
               {''.join(trade_rows)}
             </tbody>
           </table>
+          </div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -936,6 +968,7 @@ if page == NAV_SIMULATOR:
         f"""
         <div class="block" style="padding-bottom:2rem">
           <div class="kicker">Summary</div>
+          <div class="table-wrap">
           <table class="compare compact">
             <thead>
               <tr>
@@ -960,6 +993,7 @@ if page == NAV_SIMULATOR:
               </tr>
             </tbody>
           </table>
+          </div>
         </div>
         """,
         unsafe_allow_html=True,
