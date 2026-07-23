@@ -14,7 +14,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 # Bump when SimulationResult / module APIs change so Streamlit drops stale imports.
-_CACHE_VERSION = 16
+_CACHE_VERSION = 18
 if st.session_state.get("_cache_ver") != _CACHE_VERSION:
     for name in list(sys.modules):
         if name == "hedging" or name.startswith("hedging."):
@@ -182,12 +182,18 @@ header[data-testid="stHeader"],
   box-shadow:
     0 0 0 1px rgba(0, 221, 148, 0.04),
     0 12px 40px rgba(0, 0, 0, 0.28);
-  overflow: hidden;
+  /* visible so tip tooltips are not clipped into a stray band across the card */
+  overflow: visible;
 }
 .strip > div {
   padding: 1.15rem 1.1rem;
   border-right: 1px solid rgba(230, 238, 244, 0.1);
   overflow: visible;
+  position: relative;
+  z-index: 1;
+}
+.strip > div:hover {
+  z-index: 5;
 }
 .strip > div:last-child { border-right: none; }
 .strip .lbl {
@@ -212,12 +218,13 @@ header[data-testid="stHeader"],
   opacity: 0;
   position: absolute;
   left: 0;
-  bottom: calc(100% + 10px);
-  z-index: 50;
+  top: calc(100% + 8px);
+  bottom: auto;
+  z-index: 60;
   width: min(260px, 70vw);
   padding: 0.65rem 0.75rem;
-  border-radius: 4px;
-  border: 1px solid var(--line);
+  border-radius: 8px;
+  border: 1px solid rgba(230, 238, 244, 0.14);
   background: #162028;
   color: var(--ink);
   font-family: 'IBM Plex Sans', sans-serif;
@@ -585,7 +592,7 @@ if page == NAV_SIMULATOR:
             "Number of GPUs",
             min_value=1,
             max_value=100_000,
-            value=int(fleet_defaults.n_gpus),
+            value=10_000,
             step=64,
             key=f"n_gpus_{gpu}",
         )
@@ -601,7 +608,7 @@ if page == NAV_SIMULATOR:
 
     c5, c6 = st.columns(2)
     with c5:
-        horizon = st.slider("Horizon (months)", 12, 24, 12)
+        horizon = st.slider("Horizon (months)", 12, 24, 18)
     with c6:
         min_margin_pct = st.slider("Min operating margin (%)", 5, 35, 18, 1)
 
