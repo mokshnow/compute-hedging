@@ -14,7 +14,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 # Bump when SimulationResult / module APIs change so Streamlit drops stale imports.
-_CACHE_VERSION = 11
+_CACHE_VERSION = 15
 if st.session_state.get("_cache_ver") != _CACHE_VERSION:
     for name in list(sys.modules):
         if name == "hedging" or name.startswith("hedging."):
@@ -662,12 +662,14 @@ if page == NAV_SIMULATOR:
           <div class="kicker">Results</div>
           <div class="strip">
             <div>
-              <div class="lbl">Contracts short</div>
+              <div class="lbl tip">Lots short
+                <span class="tiptext">Each lot = one {gpu} forward on 10,000 GPU-hours. Short gains when $/GPU-hr falls.</span>
+              </div>
               <div class="val">{s['hedge_contracts']:,}</div>
             </div>
             <div>
               <div class="lbl tip">Hedge ratio
-                <span class="tiptext">Short Notional/Total Revenue</span>
+                <span class="tiptext">Short notional of 10k GPU-hr forwards / total revenue</span>
               </div>
               <div class="val">{s['hedge_ratio']:.1%}</div>
             </div>
@@ -744,12 +746,15 @@ if page == NAV_SIMULATOR:
         f"""
         <div class="block">
           <div class="kicker">Trades</div>
+          <div class="row-line" style="margin:0.25rem 0 0.65rem">
+            Shorting <strong style="color:#e6eef4">{gpu} 10,000 GPU-hour Synthetic Forwards</strong>
+          </div>
           <table class="compare compact">
             <thead>
               <tr>
                 <th>Month</th>
                 <th>Action</th>
-                <th>Contracts</th>
+                <th>Lots</th>
                 <th>Position</th>
                 <th>Reason</th>
               </tr>
